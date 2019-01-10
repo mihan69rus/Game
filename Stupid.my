@@ -1,0 +1,13 @@
+$start:	if ?production(?my_id())<=?demand()
+	{
+		sell ?production(?my_id()) ?prod_price();
+		goto $label;
+	}
+	sell ?demand() ?prod_price();
+$label:	buy 2 ?raw_price();
+	prod;
+	prod;
+	endturn;
+	goto $start;
+end
+	

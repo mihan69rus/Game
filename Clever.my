@@ -1,0 +1,102 @@
+$start:
+	sell 2 ?prod_price();
+	buy 2 ?raw_price()+1;
+	prod;
+	prod;
+	@prod_price=?prod_price();
+	@raw_price=?raw_price();
+	endturn;
+	print "Month:",?turn();
+	@i=?my_id();
+	@taxf=1000;
+	@taxp=500;
+	@taxm=300;
+	@index=1;
+$begin:	@ratesp[@index]=0;
+	@ratesr[@index]=0;
+	@num_ratesp[@index]=0;
+	@num_ratesr[@index]=0;
+	@index=@index+1;
+	if @index<=?players()
+	{
+		goto $begin;
+	}
+$init:	@index=1;
+	@allraws=0;
+	@allprod=0;
+$next:	print "Player number:",@index,"Money:",?money(@index);
+	if ?money(@index)>0
+	{
+		@products[@index]=?production(@index);
+		@raws[@index]=?raw(@index);
+		@allraws=@allraws+?raw(@index);
+		@allprod=@allprod+?production(@index);
+		if ?result_prod_price(@index)<>0
+		{
+			@ratesp[@index]=@ratesp[@index]+@prod_price-
+				?result_prod_price(@index);
+		}
+		if ?result_raw_price(@index)<>0
+		{
+			@ratesr[@index]=@ratesr[@index]-@raw_price+
+				?result_raw_price(@index);
+		}
+		@num_ratesr[@index]=@num_ratesr[@index]+1;
+		@num_ratesp[@index]=@num_ratesp[@index]+1;
+	}
+	@index=@index+1;
+	if @index<=?players()
+	{
+		goto $next;
+	}
+	@prod_price=?prod_price();
+	@raw_price=?raw_price();
+	if (@allprod<=?demand())
+	{
+		sell ?production(@i) ?prod_price()-1;
+		goto $asell;
+	}
+	@my_rate=?prod_price();
+	@index=1;
+$tempp:	@temp_rate=@ratesp[@index]/@num_ratesp[@index];
+	if (@temp_rate>=?prod_price()-@my_rate & @temp_rate>10 & @index<>@i &
+		 ?money(@index)>0)
+	{
+		@my_rate=@my_rate-@temp_rate-5;
+	}
+	@index=@index+1;
+	if @index<=?players()
+	{
+		goto $tempp;
+	}
+	if ?production(@i)<=?demand()
+	{
+		sell ?production(@i) @my_rate-1;
+		goto $asell;
+	}
+	sell ?demand() @my_rate-1;
+$asell:	@my_rate=?raw_price();
+	@index=1;
+$temp:	@temp_rate=@ratesr[@index]/@num_ratesr[@index];
+	if (@temp_rate>=@my_rate-?raw_price() & 0<?money(@index) & @index<>@i)
+	{
+		@my_rate=@my_rate+@temp_rate+5;
+	}
+	@index=@index+1;
+	if @index<=?players()
+	{
+		goto $temp;
+	}
+	buy 2 @my_rate;
+	if ((?money(@i)-2000)>100)
+	{
+		prod;
+	}
+	if (?money(@i)-4000>100)
+	{
+		prod;
+	}
+	endturn;
+	print "Month:",?turn();
+	goto $init;
+end
